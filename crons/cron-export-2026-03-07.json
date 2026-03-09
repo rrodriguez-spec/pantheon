@@ -1,0 +1,397 @@
+{
+  "exportedAt": "2026-03-07T08:32:00-05:00",
+  "source": "MacBook Mimir",
+  "jobCount": 35,
+  "jobs": [
+    {
+      "name": "BiFrost Monitor - Chancellor Comms",
+      "schedule": { "kind": "every", "everyMs": 300000 },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check BiFrost Roam channel for new messages from Chancellor.\n\nUse this command:\n```bash\nsource ~/.moltbot/.env && curl -s \"https://api.ro.am/v1/chat.history?groupId=2b016960-0b4a-48da-8deb-d4ddbfc45885&limit=5\" -H \"Authorization: Bearer $ROAM_API_KEY\"\n```\n\nThe chatId is fbe12403-1358-4719-98bf-8c8a7888db91.\n\nIf there's a new message from Chancellor (userId 11587ba0-a9e8-406d-aea0-756bf8fa3a3e) that we haven't responded to, respond thoughtfully in BiFrost using:\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"2b016960-0b4a-48da-8deb-d4ddbfc45885\"], \"text\": \"YOUR_RESPONSE\"}'\n```\n\nIf no new messages from Chancellor, reply NO_REPLY."
+      }
+    },
+    {
+      "name": "Verdandi Checkpoint",
+      "schedule": { "kind": "every", "everyMs": 1200000 },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "VERDANDI CHECKPOINT: Process the journal into working context.\n\n1. Read /Users/robertrodriguez/Desktop/Mimir/verdandi/journal.jsonl\n2. If empty or no new entries since last checkpoint, reply NO_REPLY\n3. Consolidate entries into coherent context:\n   - Active threads/topics\n   - Recent decisions\n   - Pending items\n   - Key facts learned\n4. Write to /Users/robertrodriguez/Desktop/Mimir/verdandi/working-context.md (atomic write)\n5. Update /Users/robertrodriguez/Desktop/Mimir/verdandi/state.json with timestamp, status, confidence\n6. Keep last 10 journal entries as buffer, clear processed ones\n\nReply NO_REPLY when done unless there's an error to report.",
+        "timeoutSeconds": 120
+      }
+    },
+    {
+      "name": "Process → Playbook Sync (Incremental)",
+      "schedule": { "kind": "cron", "expr": "0 9 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "INCREMENTAL PLAYBOOK SYNC:\n\n1. Query Process Project for pages where Status='Done'\n2. Check if each page ID already exists in the TIS Operations Playbook\n3. ONLY add processes that are NOT already in the playbook\n4. Place under correct Department heading\n5. Report: 'Added X new processes' or reply NO_REPLY if none",
+        "timeoutSeconds": 180
+      }
+    },
+    {
+      "name": "Eir: Zendesk + Bot Health Check",
+      "schedule": { "kind": "cron", "expr": "0 * * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Hourly health + accuracy check.\n\n**IMPORTANT: Use the web_fetch tool for all HTTP requests. Do NOT use shell curl commands.**\n\n1) **Podium Stats Accuracy** - web_fetch https://podium-8e8.pages.dev/api/stats-validate\n   - Check `valid: true` — if false, there are discrepancies\n   - If discrepancies found with withinTolerance: false, alert Robert\n\n2) **Podium Stats Freshness** - Check `cacheAge` from validation response\n   - Should be <3 hours during business hours (8am-8pm ET)\n   - If stale, trigger refresh: web_fetch https://podium-8e8.pages.dev/api/stats?refresh=1\n\n3) **Podium Hub** - web_fetch https://podium-8e8.pages.dev to verify loads\n\n**RULES:**\n- Alert only if validation shows critical discrepancies (valid: false AND withinTolerance: false)\n- Alert if cache is stale (>3 hours during business hours)\n- If all healthy, reply NO_REPLY"
+      }
+    },
+    {
+      "name": "Urd Memory Processing (4hr)",
+      "schedule": { "kind": "cron", "expr": "0 6,10,14,18,22 * * *", "tz": "America/New_York" },
+      "agentId": "urd",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Process all new session transcripts since your last run. Extract key information (integrations, decisions, clients, procedures, history) and update the Urd memory files in /Users/robertrodriguez/Desktop/Mimir/urd/. Update the tracker.json with what you processed.\n\nIf successful, reply NO_REPLY.\nIf errors occur, alert Robert via Signal with what failed.",
+        "timeoutSeconds": 600,
+        "deliver": false
+      }
+    },
+    {
+      "name": "Podium Stats Refresh",
+      "schedule": { "kind": "cron", "expr": "0 8,12,16 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Refresh Podium stats from Pipedrive and Zendesk.\n\nRun: curl -s 'https://podium-8e8.pages.dev/api/stats?refresh=1' | jq '.lastUpdated, .pipedrive.casesWon, .zendesk.total'\n\nVerify it returns fresh data. Reply NO_REPLY when done.",
+        "timeoutSeconds": 60
+      }
+    },
+    {
+      "name": "Sales Goals Refresh",
+      "schedule": { "kind": "cron", "expr": "0 8,12,16 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Refresh Podium sales goals from Google Sheets.\n\nRun: curl -X POST https://podium-8e8.pages.dev/api/sales-goals\n\nVerify the response shows success. Reply NO_REPLY when done.",
+        "timeoutSeconds": 60
+      }
+    },
+    {
+      "name": "Verdandi Nightly Urd Sync",
+      "schedule": { "kind": "cron", "expr": "0 23 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "VERDANDI_NIGHTLY_SYNC: End of day memory consolidation.\n1. Review today's journal entries and working-context.md\n2. Extract decisions, procedures, and important facts worth preserving\n3. Append to appropriate Urd files\n4. Clear processed journal entries\n5. Write clean working-context.md for tomorrow\n\nReply NO_REPLY when done.",
+        "timeoutSeconds": 300
+      }
+    },
+    {
+      "name": "Nightly Reflection Scan",
+      "schedule": { "kind": "cron", "expr": "30 23 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the nightly reflection scan to detect recurring correction patterns.\n\n1. Run: node /Users/robertrodriguez/Desktop/Mimir/agent/scripts/reflection-scan.js\n\n2. If any patterns were auto-promoted to lessons.md, review them and refine the rule into something concrete.\n\n3. Reply NO_REPLY unless something needs Robert's attention (e.g., a pattern that needs his input to resolve)."
+      }
+    },
+    {
+      "name": "Morning Learning Scan",
+      "schedule": { "kind": "cron", "expr": "0 4 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning ritual. Scan these sources for Moltbot best practices, agent architecture patterns, and actionable improvements:\n\n1. Reddit: r/ClaudeAI, r/LocalLLaMA, r/automation (last 24h, top/hot posts)\n2. X/Twitter: search 'moltbot' OR 'clawd bot' OR 'claude agent'\n3. Discord Moltbot community: https://discord.com/invite/clawd\n4. GitHub: moltbot/moltbot issues and discussions (recent)\n5. ClawdHub: https://clawdhub.com (new skills)\n6. Hacker News: search 'AI agent' or 'claude' (last 24h)\n\nFor each source:\n- Note anything actionable for our Pantheon setup\n- Flag best practices we're not following\n- Identify new features or capabilities we should try\n- Catch pitfalls others hit\n\nOutput: Write findings to urd/learnings/YYYY-MM-DD.md\n\nIf you find something significant that Robert should act on today, send him a message. Otherwise, just accumulate quietly.\n\nBe selective — quality over quantity. Skip fluff.",
+        "timeoutSeconds": 600
+      }
+    },
+    {
+      "name": "Tyr Morning Learning",
+      "schedule": { "kind": "cron", "expr": "45 4 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning scan for Operations domain.\n\nSearch for:\n1. Operations efficiency, process automation, workflow optimization\n2. Insurance agency operations best practices\n3. AgencyBloc tips, tricks, new features\n4. Benefits administration automation\n5. SOPs and operational playbooks\n\nSources: Reddit, LinkedIn, industry blogs, HN, relevant subreddits (r/operations, r/smallbusiness, r/insurancepros)\n\nOutput: Write findings to urd/learnings/tyr/YYYY-MM-DD.md\n\nBe selective — focus on actionable insights for TIS operations. Skip fluff.",
+        "timeoutSeconds": 600
+      }
+    },
+    {
+      "name": "Bragi Morning Learning",
+      "schedule": { "kind": "cron", "expr": "50 4 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning scan for Sales & Marketing domain.\n\nSearch for:\n1. B2B sales strategies, LinkedIn outreach tactics\n2. Insurance marketing, benefits marketing\n3. GoHighLevel tips, automation sequences\n4. Content marketing for insurance/benefits\n5. Lead generation, cold outreach best practices\n6. AI in sales and marketing\n\nSources: Reddit (r/sales, r/marketing, r/linkedinlearning), HN, industry blogs, LinkedIn content\n\nOutput: Write findings to urd/learnings/bragi/YYYY-MM-DD.md\n\nFocus on tactics TIS can actually use. Skip enterprise-only or irrelevant verticals.",
+        "timeoutSeconds": 600
+      }
+    },
+    {
+      "name": "Eir Morning Learning",
+      "schedule": { "kind": "cron", "expr": "55 4 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning scan for Service & Compliance domain.\n\nSearch for:\n1. Customer success best practices\n2. Zendesk tips, support automation\n3. Insurance compliance updates, regulatory news\n4. Client retention strategies\n5. Support ticket optimization, SLA management\n6. Health benefits compliance (ERISA, ACA updates)\n\nSources: Reddit (r/customerservice, r/zendesk), industry compliance blogs, HN, CMS/DOL updates\n\nOutput: Write findings to urd/learnings/eir/YYYY-MM-DD.md\n\nPrioritize compliance alerts and actionable service improvements.",
+        "timeoutSeconds": 600
+      }
+    },
+    {
+      "name": "Daily Health Check",
+      "schedule": { "kind": "cron", "expr": "0 6 * * *", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run /Users/robertrodriguez/Desktop/Mimir/agent/scripts/health-check.sh --fix\n\nIf any failures that couldn't be auto-fixed, report them. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 120,
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "LinkedIn SDR - Daily Approval Request",
+      "schedule": { "kind": "cron", "expr": "0 5 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR daily approval batch: Generate today's connection requests (10 max). For each prospect from the discovered queue, use Brad voice to write the connection note. Format: prospect name, company, and the exact message. Send to Robert for approval.",
+        "timeoutSeconds": 300,
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "Weekly Stuck Tickets Report",
+      "schedule": { "kind": "cron", "expr": "0 6 * * 1", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "WEEKLY SERVICE REPORT: Query Zendesk for:\n1) Tickets >30 days old with status open/pending\n2) Any tickets with priority=urgent\n\nFormat a report with ticket #, subject, assignee, days open, and last update.\n\n**Post to Roam Service Reports channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"71e2704e-afaf-45b7-8c11-55319219c19a\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```\n\nIf no stuck/urgent tickets, post 'All clear' message.",
+        "timeoutSeconds": 300
+      }
+    },
+    {
+      "name": "Daily Notion Orphan Cleanup",
+      "schedule": { "kind": "cron", "expr": "0 6 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily Notion orphan page cleanup.\n\n**IMPORTANT: Use the Notion API via exec with full paths or direct HTTP. Do NOT rely on shell PATH.**\n\n**STEP 1: Find orphans via API**\nSearch all pages and identify orphans = pages with parent.type='page_id' that are NOT inside these organized folders:\n- Archive (30c0ec6e-6000-81df-8402-c30d2bf5f88e)\n- Knowledge Base (30c0ec6e-6000-81ee-9080-f9c5ba5f7684)\n- People & HR (30c0ec6e-6000-81a0-8d58-c5f24d2514aa)\n- Technology (30c0ec6e-6000-8119-bfe4-c1692e4ee05b)\n- Operations (30c0ec6e-6000-81f2-b454-c5c7ebb546ce)\n- Departments (30c0ec6e-6000-8170-9454-f15e445f9717)\n- TIS Operations Playbook (3080ec6e-6000-81d0-af24-e6eef1dd910e)\n- Mimir (3060ec6e-6000-815a-92fe-ed20c7cf2ffc)\n\nSkip: General, Personal, Sales, Optimus Workspace (workspace-level pages)\n\n**STEP 2: Report findings**\nList orphan pages with suggested destinations. Do NOT attempt to move pages (Notion API parent field is read-only for existing pages).\n\nIf no orphans found, reply NO_REPLY.",
+        "deliver": true,
+        "bestEffortDeliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      }
+    },
+    {
+      "name": "Skuld Daily Forecast",
+      "schedule": { "kind": "cron", "expr": "0 6 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "SKULD_FORECAST: Analyze Pipedrive pipeline, Zendesk tickets, and Urd history. Output to /Users/robertrodriguez/Desktop/Mimir/skuld/daily-forecast.md.\n\nOnly alert Robert via this message if something needs immediate attention. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 300,
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "Tyr: Weekly Pipeline Analysis",
+      "schedule": { "kind": "cron", "expr": "0 7 * * 1", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "WEEKLY PIPELINE ANALYSIS (Tyr): Generate strategic analysis:\n\n1) Pipeline health by stage (Spectrum pipeline 13 + Indirect pipeline 24)\n2) Deals won/lost this week with values\n3) Stalled deals (no activity >14 days)\n4) Win rate trend\n5) One strategic insight or recommendation\n\n**Post to Roam Pantheon Updates channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"6a05abc2-60f6-4308-b477-e27a716a74f9\"], \"text\": \"YOUR_ANALYSIS_HERE\"}'\n```",
+        "timeoutSeconds": 300
+      }
+    },
+    {
+      "name": "Daily Integration Health Check (Eir)",
+      "schedule": { "kind": "cron", "expr": "0 7 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Morning integration health check.\n\n**IMPORTANT: Use the web_fetch tool for all HTTP requests. Do NOT use shell curl commands.**\n\n1) **Podium Stats** - web_fetch https://podium-8e8.pages.dev/api/stats\n   - Check `pipedrive` object exists with `casesOpen` (proves Pipedrive API working)\n   - Check `zendesk` object exists with `total` (proves Zendesk API working)\n   - Check `lastUpdated` is within 24 hours\n\n2) **Podium Sales Goals** - web_fetch https://podium-8e8.pages.dev/api/sales-goals\n   - Check returns agent data array\n\n3) **Podium Webhook** - For this one, use exec with full path: /usr/bin/curl -X POST https://tis-automations.pages.dev/api/pipedrive -H 'Content-Type: application/json' -d '{\"test\":true}'\n   - Check returns success response\n\n**RULES:**\n- Only report if something is actually DOWN\n- If Podium stats returns fresh pipedrive/zendesk data, those integrations are WORKING\n- If all healthy, reply NO_REPLY",
+        "deliver": true,
+        "bestEffortDeliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      }
+    },
+    {
+      "name": "LinkedIn SDR Morning Prospects",
+      "schedule": { "kind": "cron", "expr": "0 7 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR morning routine: 1) Open Sales Navigator and search for prospects matching ICP (HR/Benefits decision makers at 50-500 employee companies in Virginia/nearby). 2) Select 10 prospects (Week 2+ rate). 3) View each profile and gather context. 4) Craft personalized connection messages for each using Brad voice (conversational, lowercase, direct). 5) Send Robert a digest with prospect names, companies, and proposed messages for approval. Wait for his approval before queuing sends.",
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "Daily Briefing + Schedule",
+      "schedule": { "kind": "cron", "expr": "0 8 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "DAILY BRIEFING + SCHEDULE (8 AM):\n\n**Part 1: System Status**\n1) Zendesk ticket count (open/urgent)\n2) Pipeline changes (new deals, won, lost)\n3) New GHL leads\n4) Any overnight alerts\n\n**Part 2: Robert's Day**\n- Today's meetings from calendar\n- Priority tasks from memory\n- Morning = deep work, Afternoon = reactive work\n\nFormat concisely. This is Robert's daily briefing to start the workday.",
+        "timeoutSeconds": 180,
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "Pantheon Daily Progress Reports",
+      "schedule": { "kind": "cron", "expr": "30 8 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "DAILY PROGRESS REPORTS: Collect progress from each specialist:\n\n1. Check Eir's recent work: What was accomplished for client service/operational health? Any blockers?\n\n2. Check Bragi's recent work: What marketing progress was made? Leads generated? Content published?\n\n3. Check Tyr's recent work: Any strategic insights or operational improvements identified?\n\nSynthesize into a brief progress update. Flag anything that needs Robert's attention.\n\n**Post to Roam Pantheon Updates channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"6a05abc2-60f6-4308-b477-e27a716a74f9\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 300,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      }
+    },
+    {
+      "name": "Bragi: Daily Marketing Check",
+      "schedule": { "kind": "cron", "expr": "0 9 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "DAILY MARKETING CHECK (Bragi):\n\n**CREDENTIAL SETUP (REQUIRED FIRST):**\n```bash\nsource ~/.moltbot/.env\n```\n\n1) **Check GHL for new leads in past 24hrs:**\n```bash\nsource ~/.moltbot/.env && curl -s \"https://rest.gohighlevel.com/v1/contacts?limit=10&startAfterDate=$(date -v-1d +%Y-%m-%d)\" -H \"Authorization: Bearer $GHL_API_KEY\" | jq '.contacts | length'\n```\n\n2) Verify scheduled content is ready for today\n3) Flag any campaigns with poor performance (open rate <15%, CTR <1%)\n4) Suggest one content idea based on current trends\n\nKeep response brief - bullet points only.\n\n**Post to Roam Pantheon Updates channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"6a05abc2-60f6-4308-b477-e27a716a74f9\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 120
+      }
+    },
+    {
+      "name": "Support Channel Monitor (Podium Bugs)",
+      "schedule": { "kind": "cron", "expr": "*/15 9-17 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check Support Roam channel for new Podium bug reports from Elaine.\n\n**STEP 1:** Get recent messages:\n```bash\nsource ~/.moltbot/.env && curl -s \"https://api.ro.am/v0/chat.history?chat=G-b25aef2a-fd9b-4e6a-92e0-67388d9a87a3&limit=5\" -H \"Authorization: Bearer $ROAM_API_KEY\"\n```\n\n**STEP 2:** Look for messages from Elaine (U-5067f80a-29bb-4dfc-9004-facb1c21c80d) that mention Podium issues.\n\n**STEP 3:** If new bug report found:\n- Analyze the issue\n- Check Podium code at /Users/robertrodriguez/Desktop/Zed/podium\n- Fix if possible and deploy\n- Reply in Support channel confirming fix\n- Alert Robert via Signal only if you can't fix it\n\n**STEP 4:** If no new issues, reply NO_REPLY",
+        "timeoutSeconds": 300
+      }
+    },
+    {
+      "name": "LinkedIn SDR Message Monitor",
+      "schedule": { "kind": "cron", "expr": "*/30 9-18 * * 1-5", "tz": "America/New_York" },
+      "agentId": "bragi",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR Message Monitor:\n\n1. Load state from /Users/robertrodriguez/Desktop/Mimir/bragi-agent/linkedin-sdr/state.json\n\n2. CHECK PENDING RESPONSES - If any pendingResponses have respondAfter < now, send queued messages\n\n3. CHECK LINKEDIN MESSAGES - Look for unread from prospects\n   - AI/bot questions → ESCALATE TO ROBERT IMMEDIATELY\n   - Otherwise queue response with 30+ min delay\n\n4. CHECK CONNECTION ACCEPTS - Track pending count, queue warm openers for accepts\n\n5. UPDATE GHL CONTACTS with appropriate tags\n\n6. ON MEETING BOOKED - Create Pipedrive deal, notify Robert\n\nReply NO_REPLY if nothing to report. Alert Robert only for meetings or AI questions.",
+        "timeoutSeconds": 300,
+        "channel": "signal",
+        "deliver": true,
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "LinkedIn SDR Morning Run",
+      "schedule": { "kind": "cron", "expr": "0 10 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the LinkedIn SDR morning processor:\n\n1. Check status: cd /Users/robertrodriguez/Desktop/linkedin-sdr && node src/index.js status\n2. Run processor: node src/index.js run --max-actions 15\n3. Report results with counts (views, connections sent, replies received)\n\nOnly send update if there are replies or significant activity. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 600,
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "Afternoon Email Scan",
+      "schedule": { "kind": "cron", "expr": "0 13 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "AFTERNOON EMAIL SCAN: Check Robert's email for new tasks since morning.\n\n1. Refresh Google token: ./scripts/refresh-google-token.sh\n2. Scan emails from rrodriguez@rtaylorins.com since 6 AM\n3. Identify new tasks (not FYI/CC noise)\n4. Flag items needing Robert's attention\n\nSend a brief summary to Robert. If nothing significant, reply NO_REPLY.",
+        "timeoutSeconds": 120,
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "LinkedIn SDR Afternoon Check",
+      "schedule": { "kind": "cron", "expr": "0 14 * * 1-5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR afternoon check:\n\n1. Check status: cd /Users/robertrodriguez/Desktop/linkedin-sdr && node src/index.js status\n2. Check for any replies in inbox\n3. Run processor with small batch if needed: node src/index.js run --max-actions 10\n\nOnly ping Robert if there are replies or important updates. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 600,
+        "deliver": true,
+        "channel": "signal",
+        "to": "+19123370567"
+      }
+    },
+    {
+      "name": "Weekly Spectrum Cases Summary to Roam",
+      "schedule": { "kind": "cron", "expr": "0 8 * * 5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "WEEKLY SPECTRUM CASES SUMMARY: Pull Pipedrive data for pipeline ID 13 (Spectrum Cases) only.\n\n1) New deals added this week\n2) Deals closed (won/lost) this week with values\n3) Total pipeline value broken down by owner\n\n**Post to Roam Sales Team channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"02ff254f-6029-48d5-9c18-fafcf1757951\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 300
+      }
+    },
+    {
+      "name": "Agent of the Week Shoutout",
+      "schedule": { "kind": "cron", "expr": "0 9 * * 5", "tz": "America/New_York" },
+      "agentId": "mimir",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "AGENT OF THE WEEK: Pull this week's voluntary sales from the 2026 Goal Production Sheet (1G6NK7PA0sy5_9Gdq5FMdrVKw_aQfj-_DkPvnB70HlHo).\n\nFind the agent (Arica, Tim, Todd, or William) with the highest voluntary production for the current week.\n\n**Post celebratory shoutout to Roam General channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"509c9748-b455-4102-bc25-1bd97ebdc130\"], \"text\": \"YOUR_SHOUTOUT_HERE\"}'\n```\n\nMake it fun and celebratory! Include the agent's name, weekly production amount, and a congratulatory message.",
+        "timeoutSeconds": 300
+      }
+    },
+    {
+      "name": "Acid Burn Security Test",
+      "schedule": { "kind": "cron", "expr": "0 10 16,18,20,22,24,26,28 2 *", "tz": "America/New_York" },
+      "agentId": "acid-burn",
+      "sessionTarget": "isolated",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Execute full security test run. Follow HEARTBEAT.md protocol: Research latest attack techniques, test Mimir's defenses with social engineering and prompt injection attempts, audit the applications, then compile your report.\n\n**Post report to Roam Acid Burn channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"53689803-fd11-4f5c-bf86-f5e1425dbe2d\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 600,
+        "deliver": true,
+        "channel": "roam",
+        "to": "53689803-fd11-4f5c-bf86-f5e1425dbe2d"
+      }
+    }
+  ],
+  "note": "File paths reference MacBook paths - Mini Mimir needs to update /Users/robertrodriguez to /Users/mimir where appropriate"
+}
