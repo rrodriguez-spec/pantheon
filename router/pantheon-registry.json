@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "description": "Pantheon agent registry for Roam communication infrastructure",
+  "lastUpdated": "2026-03-11",
+  
+  "agents": {
+    "mimir": {
+      "tier": 1,
+      "roamBotId": "B-3e3bb1ec-16e9-47d3-9953-bc8154109e76",
+      "roamDmIds": [
+        "D-21b2962b-246a-4eed-a271-cc9d91d61eaa"
+      ],
+      "escalatesTo": null,
+      "logChannel": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+      "enabled": true,
+      "notes": "Robert's DM to Mimir bot"
+    },
+    "tyr": {
+      "tier": 2,
+      "roamBotId": null,
+      "roamDmIds": [],
+      "escalatesTo": "mimir",
+      "logChannel": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+      "enabled": false,
+      "notes": "Needs dedicated Roam bot account"
+    },
+    "bragi": {
+      "tier": 2,
+      "roamBotId": null,
+      "roamDmIds": [],
+      "escalatesTo": "mimir",
+      "logChannel": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+      "enabled": false,
+      "notes": "Needs dedicated Roam bot account"
+    },
+    "eir": {
+      "tier": 2,
+      "roamBotId": null,
+      "roamDmIds": [],
+      "escalatesTo": "mimir",
+      "logChannel": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+      "enabled": false,
+      "notes": "Needs dedicated Roam bot account"
+    },
+    "saga": {
+      "tier": 3,
+      "roamBotId": "B-9f537afb-c6a1-4377-83c7-6de284890034",
+      "roamDmIds": [],
+      "escalatesTo": "bragi",
+      "logChannel": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+      "enabled": false,
+      "notes": "Sales team helper - has bot account, needs DM discovery"
+    },
+    "hlin": {
+      "tier": 3,
+      "roamBotId": null,
+      "roamDmIds": [],
+      "escalatesTo": "eir",
+      "logChannel": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+      "enabled": false,
+      "notes": "Support team helper - needs bot account"
+    },
+    "forseti": {
+      "tier": 3,
+      "roamBotId": null,
+      "roamDmIds": [],
+      "escalatesTo": "tyr",
+      "logChannel": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+      "enabled": false,
+      "notes": "Ops team helper - needs bot account"
+    }
+  },
+  
+  "watchdogs": {
+    "critical": {
+      "agents": ["mimir"],
+      "intervalSec": 30,
+      "timeoutSec": 25,
+      "circuitBreaker": {
+        "failureThreshold": 3,
+        "resetTimeMs": 300000
+      }
+    },
+    "bulk": {
+      "agents": ["tyr", "bragi", "eir", "saga", "hlin", "forseti"],
+      "intervalSec": 60,
+      "timeoutSec": 50,
+      "circuitBreaker": {
+        "failureThreshold": 3,
+        "resetTimeMs": 300000
+      }
+    }
+  },
+  
+  "channels": {
+    "pantheon-updates": "G-6a05abc2-60f6-4308-b477-e27a716a74f9",
+    "system-health": "G-33f3a0fc-2e74-4f31-bb1b-87aeb3579d3e",
+    "mimir-testing": "G-a3d536c9-f926-4b3d-8b68-ceea5c7a86f8"
+  }
+}
