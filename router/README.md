@@ -55,3 +55,46 @@ Consensus between Mimir and Tyr after 3 rounds of iteration:
 - Roam treated like any other channel (Telegram, Signal)
 - Agents use existing Urd/Verdandi memory infrastructure
 - Each agent has own Roam bot identity (separate DMs)
+
+## 🔑 GROUPS vs DMs (2026-03-12)
+
+**Use Roam GROUPS instead of DMs for multi-user agent communication.**
+
+### Why Groups?
+
+| DMs | Groups |
+|-----|--------|
+| ❌ Each DM = unique channel ID | ✅ One group ID, many users |
+| ❌ Adding user = config change | ✅ Adding user = group invite |
+| ❌ Must update registry for each user | ✅ Config once, users join/leave freely |
+
+### Pattern
+
+```
+1. Create one group per agent/function
+2. Add group ID to config ONCE  
+3. Add/remove users via Roam group management
+4. No config changes needed for user management
+```
+
+### Current Groups
+
+| Group | Purpose | ID |
+|-------|---------|-----|
+| Pantheon Updates | Agent logs, status | `G-6a05abc2-60f6-4308-b477-e27a716a74f9` |
+| System Health | Health alerts | `G-33f3a0fc-2e74-4f31-bb1b-87aeb3579d3e` |
+| Mimir Testing | Dev/testing | `G-a3d536c9-f926-4b3d-8b68-ceea5c7a86f8` |
+
+### Adding Users to Agent Communication
+
+**DO THIS:**
+1. Go to Roam → appropriate group
+2. Add user to group
+3. Done
+
+**DON'T DO THIS:**
+- Create new DM channels
+- Update config files for each user
+- Configure channel IDs per-person
+
+See `urd/decisions.md` for full rationale.

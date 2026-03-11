@@ -113,6 +113,11 @@ Moltbot Gateway
 - **Sales Team** — Weekly pipeline summaries
 - **Service Reports** — Ticket status, stuck issues
 
+**Architecture:** Use GROUPS not DMs for agent communication.
+- One group ID per agent/function (configured once)
+- Users join/leave groups without config changes
+- See `router/README.md` for group IDs and management
+
 ### Browser/CLI (Secondary)
 - **Development work** — Podium, integrations, debugging
 - **Bulk operations** — Data exports, migrations, analysis
