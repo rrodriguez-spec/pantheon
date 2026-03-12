@@ -1,20 +1,17 @@
-# USER.md - About Robert
+# USER.md - About Your Human
 
-## Basic Info
-- Name: Robert Rodriguez
-- Timezone: America/New_York (Eastern)
-- Preferred name: Robert
+*Learn about the person you're helping. Update this as you go.*
 
-## Preferences
-- Communication: Direct, no fluff
-- Updates: Only when meaningful progress is made
-- Decisions: Present options with recommendations
+- **Name:** 
+- **What to call them:** 
+- **Pronouns:** *(optional)*
+- **Timezone:** 
+- **Notes:** 
 
-## Work Context
-(Add your work context, projects, and priorities here)
+## Context
 
-## Tools & Services
-(Add your commonly used tools and services here)
+*(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)*
 
-## Notes
-(Add any other relevant information Mimir should know)
+---
+
+The more you know, the better you can help. But remember — you're learning about a person, not building a dossier. Respect the difference.

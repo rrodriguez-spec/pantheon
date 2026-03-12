@@ -1,0 +1,940 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "3ee0f317-8f42-4182-bdb9-5a713b5f4873",
+      "agentId": "mimir",
+      "name": "BiFrost Monitor - Chancellor Comms",
+      "enabled": true,
+      "createdAtMs": 1772890635267,
+      "updatedAtMs": 1773284377122,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check BiFrost Roam channel for new messages from Chancellor.\n\nUse this command:\n```bash\nsource ~/.moltbot/.env && curl -s \"https://api.ro.am/v1/chat.history?groupId=2b016960-0b4a-48da-8deb-d4ddbfc45885&limit=5\" -H \"Authorization: Bearer $ROAM_API_KEY\"\n```\n\nThe chatId is fbe12403-1358-4719-98bf-8c8a7888db91.\n\nIf there's a new message from Chancellor (userId 11587ba0-a9e8-406d-aea0-756bf8fa3a3e) that we haven't responded to, respond thoughtfully in BiFrost using:\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"2b016960-0b4a-48da-8deb-d4ddbfc45885\"], \"text\": \"YOUR_RESPONSE\"}'\n```\n\nIf no new messages from Chancellor, reply NO_REPLY."
+      },
+      "state": {
+        "nextRunAtMs": 1773286191402,
+        "lastRunAtMs": 1773284377122,
+        "lastStatus": "ok",
+        "lastDurationMs": 14274
+      }
+    },
+    {
+      "id": "a944400d-5f80-46a4-b1bc-290f92f0851e",
+      "agentId": "mimir",
+      "name": "Verdandi Checkpoint",
+      "enabled": true,
+      "createdAtMs": 1772890635275,
+      "updatedAtMs": 1773283207233,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1200000
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "VERDANDI CHECKPOINT: Process the journal into working context.\n\n1. Read /Users/mimir/Desktop/Mimir/verdandi/journal.jsonl\n2. If empty or no new entries since last checkpoint, reply NO_REPLY\n3. Consolidate entries into coherent context:\n   - Active threads/topics\n   - Recent decisions\n   - Pending items\n   - Key facts learned\n4. Write to /Users/mimir/Desktop/Mimir/verdandi/working-context.md (atomic write)\n5. Update /Users/mimir/Desktop/Mimir/verdandi/state.json with timestamp, status, confidence\n6. Keep last 10 journal entries as buffer, clear processed ones\n\nReply NO_REPLY when done unless there's an error to report.",
+        "timeoutSeconds": 120
+      },
+      "state": {
+        "nextRunAtMs": 1773284414275,
+        "lastRunAtMs": 1773283207233,
+        "lastStatus": "ok",
+        "lastDurationMs": 7037
+      }
+    },
+    {
+      "id": "8b803b9c-6b4b-4d75-b4a6-704ebecec96b",
+      "agentId": "mimir",
+      "name": "Process → Playbook Sync (Incremental)",
+      "enabled": false,
+      "createdAtMs": 1772890635281,
+      "updatedAtMs": 1772892325534,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "INCREMENTAL PLAYBOOK SYNC:\n\n1. Query Process Project for pages where Status='Done'\n2. Check if each page ID already exists in the TIS Operations Playbook\n3. ONLY add processes that are NOT already in the playbook\n4. Place under correct Department heading\n5. Report: 'Added X new processes' or reply NO_REPLY if none",
+        "timeoutSeconds": 180
+      },
+      "state": {
+        "lastRunAtMs": 1772892151772,
+        "lastStatus": "ok",
+        "lastDurationMs": 67399
+      }
+    },
+    {
+      "id": "cc25c960-cac3-48e3-8d60-5cefd4c7820a",
+      "agentId": "mimir",
+      "name": "Eir: Zendesk + Bot Health Check",
+      "enabled": true,
+      "createdAtMs": 1772890635287,
+      "updatedAtMs": 1773280800002,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 * * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Hourly health + accuracy check.\n\n**IMPORTANT: Use the web_fetch tool for all HTTP requests. Do NOT use shell curl commands.**\n\n1) **Podium Stats Accuracy** - web_fetch https://podium-8e8.pages.dev/api/stats-validate\n   - Check `valid: true` — if false, there are discrepancies\n   - If discrepancies found with withinTolerance: false, alert Robert\n\n2) **Podium Stats Freshness** - Check `cacheAge` from validation response\n   - Should be <3 hours during business hours (8am-8pm ET)\n   - If stale, trigger refresh: web_fetch https://podium-8e8.pages.dev/api/stats?refresh=1\n\n3) **Podium Hub** - web_fetch https://podium-8e8.pages.dev to verify loads\n\n**RULES:**\n- Alert only if validation shows critical discrepancies (valid: false AND withinTolerance: false)\n- Alert if cache is stale (>3 hours during business hours)\n- If all healthy, reply NO_REPLY"
+      },
+      "state": {
+        "nextRunAtMs": 1773284400000,
+        "lastRunAtMs": 1773280800002,
+        "lastStatus": "ok",
+        "lastDurationMs": 41932
+      }
+    },
+    {
+      "id": "7b13b7c9-f159-496e-93db-01ec7ef1f905",
+      "agentId": "mimir",
+      "name": "Urd Memory Processing (4hr)",
+      "enabled": true,
+      "createdAtMs": 1772890635291,
+      "updatedAtMs": 1773280800002,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6,10,14,18,22 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Process all new session transcripts since your last run. Extract key information (integrations, decisions, clients, procedures, history) and update the Urd memory files in /Users/mimir/Desktop/Mimir/urd/. Update the tracker.json with what you processed.\n\nIf successful, reply NO_REPLY.\nIf errors occur, alert Robert via Signal with what failed.",
+        "timeoutSeconds": 600,
+        "deliver": false
+      },
+      "state": {
+        "nextRunAtMs": 1773309600000,
+        "lastRunAtMs": 1773280841941,
+        "lastStatus": "ok",
+        "lastDurationMs": 139955
+      }
+    },
+    {
+      "id": "7d86ed41-54e4-44a9-a304-7e9da8267369",
+      "agentId": "mimir",
+      "name": "Podium Stats Refresh",
+      "enabled": true,
+      "createdAtMs": 1772890635296,
+      "updatedAtMs": 1773259200002,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8,12,16 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Refresh Podium stats from Pipedrive and Zendesk.\n\nRun: curl -s 'https://podium-8e8.pages.dev/api/stats?refresh=1' | jq '.lastUpdated, .pipedrive.casesWon, .zendesk.total'\n\nVerify it returns fresh data. Reply NO_REPLY when done.",
+        "timeoutSeconds": 60
+      },
+      "state": {
+        "nextRunAtMs": 1773316800000,
+        "lastRunAtMs": 1773259218981,
+        "lastStatus": "ok",
+        "lastDurationMs": 22695
+      }
+    },
+    {
+      "id": "39bad11b-7c7c-4fbc-b67b-b49dc072333a",
+      "agentId": "mimir",
+      "name": "Sales Goals Refresh",
+      "enabled": true,
+      "createdAtMs": 1772890635300,
+      "updatedAtMs": 1773259200002,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8,12,16 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Refresh Podium sales goals from Google Sheets.\n\nRun: curl -X POST https://podium-8e8.pages.dev/api/sales-goals\n\nVerify the response shows success. Reply NO_REPLY when done.",
+        "timeoutSeconds": 60
+      },
+      "state": {
+        "nextRunAtMs": 1773316800000,
+        "lastRunAtMs": 1773259241683,
+        "lastStatus": "ok",
+        "lastDurationMs": 14447
+      }
+    },
+    {
+      "id": "f86b3fcf-2128-47df-bba2-78271e86be2d",
+      "agentId": "mimir",
+      "name": "Verdandi Nightly Urd Sync",
+      "enabled": true,
+      "createdAtMs": 1772890635303,
+      "updatedAtMs": 1773248575695,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 23 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "VERDANDI_NIGHTLY_SYNC: End of day memory consolidation + git commit.\n\n**PART 1: Memory Processing**\n1. Review today's journal entries and working-context.md\n2. Extract decisions, procedures, and important facts worth preserving\n3. Append to appropriate Urd files\n4. Clear processed journal entries\n5. Write clean working-context.md for tomorrow\n\n**PART 2: Git Commit (MANDATORY)**\nCommit all workspace changes to GitHub:\n```bash\ncd /Users/mimir/Desktop/Mimir\ngit add -A\ngit commit -m \"Nightly sync: $(date +%Y-%m-%d) - memory, configs, scripts\" --allow-empty\ngit pull --rebase || git pull\ngit push\n```\n\nThis ensures all daily work is preserved in version control.\n\nReply NO_REPLY when done.",
+        "timeoutSeconds": 300
+      },
+      "state": {
+        "nextRunAtMs": 1773284400000,
+        "lastRunAtMs": 1773198028682,
+        "lastStatus": "ok",
+        "lastDurationMs": 72792
+      }
+    },
+    {
+      "id": "0aff93f4-3ced-45b5-a20b-8d25bf3262d0",
+      "agentId": "mimir",
+      "name": "Nightly Reflection Scan",
+      "enabled": true,
+      "createdAtMs": 1772890635307,
+      "updatedAtMs": 1773199800006,
+      "schedule": {
+        "kind": "cron",
+        "expr": "30 23 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the nightly reflection scan to detect recurring correction patterns.\n\n1. Run: node /Users/mimir/Desktop/Mimir/agent/scripts/reflection-scan.js\n\n2. If any patterns were auto-promoted to lessons.md, review them and refine the rule into something concrete.\n\n3. Reply NO_REPLY unless something needs Robert's attention (e.g., a pattern that needs his input to resolve)."
+      },
+      "state": {
+        "nextRunAtMs": 1773286200000,
+        "lastRunAtMs": 1773199800006,
+        "lastStatus": "ok",
+        "lastDurationMs": 8451
+      }
+    },
+    {
+      "id": "82a8d690-1d18-437b-864f-dfe829a2b469",
+      "agentId": "mimir",
+      "name": "Morning Learning Scan",
+      "enabled": true,
+      "createdAtMs": 1772890635310,
+      "updatedAtMs": 1773216000000,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 4 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning ritual - Consolidated scan across ALL domains (Mimir, Tyr, Bragi, Eir). Scan these sources for actionable improvements:\n\n1. **MIMIR DOMAIN** - Moltbot best practices, agent architecture patterns:\n   - Reddit: r/ClaudeAI, r/LocalLLaMA, r/automation\n   - X/Twitter: search 'moltbot' OR 'clawd bot' OR 'claude agent'  \n   - GitHub: moltbot/moltbot issues and discussions\n   - ClawdHub: https://clawdhub.com\n\n2. **TYR DOMAIN** - Operations efficiency:\n   - Operations automation, process optimization\n   - Insurance agency operations best practices\n   - AgencyBloc tips, tricks, new features\n   - SOPs and operational playbooks\n\n3. **BRAGI DOMAIN** - Sales & Marketing:\n   - B2B sales strategies, LinkedIn outreach\n   - Insurance/benefits marketing\n   - GoHighLevel tips, automation sequences\n   - Lead generation, cold outreach best practices\n\n4. **EIR DOMAIN** - Service & Compliance:\n   - Customer success best practices\n   - Zendesk tips, support automation  \n   - Insurance compliance updates\n   - Client retention strategies\n\nFor each domain, note actionable insights. Output consolidated findings to urd/learnings/consolidated/YYYY-MM-DD.md\n\nBe selective — quality over quantity. Skip fluff.",
+        "timeoutSeconds": 600
+      },
+      "state": {
+        "nextRunAtMs": 1773302400000,
+        "lastRunAtMs": 1773216020766,
+        "lastStatus": "ok",
+        "lastDurationMs": 92330
+      }
+    },
+    {
+      "id": "e091d782-dbfb-44f5-affc-e838dc8f837d",
+      "agentId": "mimir",
+      "name": "Tyr Morning Learning",
+      "enabled": false,
+      "createdAtMs": 1772890692225,
+      "updatedAtMs": 1773091761552,
+      "schedule": {
+        "kind": "cron",
+        "expr": "45 4 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning scan for Operations domain.\n\nSearch for:\n1. Operations efficiency, process automation, workflow optimization\n2. Insurance agency operations best practices\n3. AgencyBloc tips, tricks, new features\n4. Benefits administration automation\n5. SOPs and operational playbooks\n\nSources: Reddit, LinkedIn, industry blogs, HN, relevant subreddits (r/operations, r/smallbusiness, r/insurancepros)\n\nOutput: Write findings to urd/learnings/tyr/YYYY-MM-DD.md\n\nBe selective — focus on actionable insights for TIS operations. Skip fluff.",
+        "timeoutSeconds": 600
+      },
+      "state": {
+        "lastRunAtMs": 1773045900002,
+        "lastStatus": "ok",
+        "lastDurationMs": 56433
+      }
+    },
+    {
+      "id": "e363260e-ef41-465f-8968-db29a0790fbf",
+      "agentId": "mimir",
+      "name": "Bragi Morning Learning",
+      "enabled": false,
+      "createdAtMs": 1772890692235,
+      "updatedAtMs": 1773091768501,
+      "schedule": {
+        "kind": "cron",
+        "expr": "50 4 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning scan for Sales & Marketing domain.\n\nSearch for:\n1. B2B sales strategies, LinkedIn outreach tactics\n2. Insurance marketing, benefits marketing\n3. GoHighLevel tips, automation sequences\n4. Content marketing for insurance/benefits\n5. Lead generation, cold outreach best practices\n6. AI in sales and marketing\n\nSources: Reddit (r/sales, r/marketing, r/linkedinlearning), HN, industry blogs, LinkedIn content\n\nOutput: Write findings to urd/learnings/bragi/YYYY-MM-DD.md\n\nFocus on tactics TIS can actually use. Skip enterprise-only or irrelevant verticals.",
+        "timeoutSeconds": 600
+      },
+      "state": {
+        "lastRunAtMs": 1773046200002,
+        "lastStatus": "ok",
+        "lastDurationMs": 11971
+      }
+    },
+    {
+      "id": "acfb21f9-3251-45c3-98e0-af07b321362c",
+      "agentId": "mimir",
+      "name": "Eir Morning Learning",
+      "enabled": false,
+      "createdAtMs": 1772890692242,
+      "updatedAtMs": 1773091774095,
+      "schedule": {
+        "kind": "cron",
+        "expr": "55 4 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily learning scan for Service & Compliance domain.\n\nSearch for:\n1. Customer success best practices\n2. Zendesk tips, support automation\n3. Insurance compliance updates, regulatory news\n4. Client retention strategies\n5. Support ticket optimization, SLA management\n6. Health benefits compliance (ERISA, ACA updates)\n\nSources: Reddit (r/customerservice, r/zendesk), industry compliance blogs, HN, CMS/DOL updates\n\nOutput: Write findings to urd/learnings/eir/YYYY-MM-DD.md\n\nPrioritize compliance alerts and actionable service improvements.",
+        "timeoutSeconds": 600
+      },
+      "state": {
+        "lastRunAtMs": 1773046500003,
+        "lastStatus": "ok",
+        "lastDurationMs": 74954
+      }
+    },
+    {
+      "id": "648e3c04-8ebe-46a8-873d-215b0c9ddbca",
+      "agentId": "mimir",
+      "name": "Daily Health Check",
+      "enabled": true,
+      "createdAtMs": 1772890692248,
+      "updatedAtMs": 1773258433240,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run /Users/mimir/Desktop/Mimir/agent/scripts/health-check.sh --fix\n\nIf any failures that couldn't be auto-fixed, report them. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 120,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041",
+        "model": "anthropic/claude-haiku-4"
+      },
+      "state": {
+        "nextRunAtMs": 1773309600000,
+        "lastRunAtMs": 1773223319986,
+        "lastStatus": "error",
+        "lastDurationMs": 27,
+        "lastError": "Error: Unknown model: anthropic/claude-haiku-4-20250514"
+      }
+    },
+    {
+      "id": "6a6710b1-c7ec-45f8-ae37-bac08e62fb1f",
+      "agentId": "mimir",
+      "name": "LinkedIn SDR - Daily Approval Request",
+      "enabled": true,
+      "createdAtMs": 1772890692253,
+      "updatedAtMs": 1773258415909,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 5 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR daily approval batch: Generate today's connection requests (10 max). For each prospect from the discovered queue, use Brad voice to write the connection note. Format: prospect name, company, and the exact message. Send to Robert for approval.",
+        "timeoutSeconds": 300,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773306000000,
+        "lastRunAtMs": 1773219618920,
+        "lastStatus": "ok",
+        "lastDurationMs": 46363
+      }
+    },
+    {
+      "id": "4eac95dc-694b-4fe9-b8fb-869f9700be83",
+      "agentId": "mimir",
+      "name": "Weekly Stuck Tickets Report",
+      "enabled": true,
+      "createdAtMs": 1772890692258,
+      "updatedAtMs": 1773050400001,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * 1",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "WEEKLY SERVICE REPORT: Query Zendesk for:\n1) Tickets >30 days old with status open/pending\n2) Any tickets with priority=urgent\n\nFormat a report with ticket #, subject, assignee, days open, and last update.\n\n**Post to Roam Service Reports channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"71e2704e-afaf-45b7-8c11-55319219c19a\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```\n\nIf no stuck/urgent tickets, post 'All clear' message.",
+        "timeoutSeconds": 300
+      },
+      "state": {
+        "nextRunAtMs": 1773655200000,
+        "lastRunAtMs": 1773050499242,
+        "lastStatus": "ok",
+        "lastDurationMs": 70229
+      }
+    },
+    {
+      "id": "cd02ebde-f6c0-4858-a740-4fa1af2ad17f",
+      "agentId": "mimir",
+      "name": "Daily Notion Orphan Cleanup",
+      "enabled": true,
+      "createdAtMs": 1772890692262,
+      "updatedAtMs": 1773223200002,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Daily Notion orphan page cleanup.\n\n**IMPORTANT: Use the Notion API via exec with full paths or direct HTTP. Do NOT rely on shell PATH.**\n\n**STEP 1: Find orphans via API**\nSearch all pages and identify orphans = pages with parent.type='page_id' that are NOT inside these organized folders:\n- Archive (30c0ec6e-6000-81df-8402-c30d2bf5f88e)\n- Knowledge Base (30c0ec6e-6000-81ee-9080-f9c5ba5f7684)\n- People & HR (30c0ec6e-6000-81a0-8d58-c5f24d2514aa)\n- Technology (30c0ec6e-6000-8119-bfe4-c1692e4ee05b)\n- Operations (30c0ec6e-6000-81f2-b454-c5c7ebb546ce)\n- Departments (30c0ec6e-6000-8170-9454-f15e445f9717)\n- TIS Operations Playbook (3080ec6e-6000-81d0-af24-e6eef1dd910e)\n- Mimir (3060ec6e-6000-815a-92fe-ed20c7cf2ffc)\n\nSkip: General, Personal, Sales, Optimus Workspace (workspace-level pages)\n\n**STEP 2: Report findings**\nList orphan pages with suggested destinations. Do NOT attempt to move pages (Notion API parent field is read-only for existing pages).\n\nIf no orphans found, reply NO_REPLY.",
+        "deliver": true,
+        "bestEffortDeliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773309600000,
+        "lastRunAtMs": 1773223320013,
+        "lastStatus": "ok",
+        "lastDurationMs": 315620
+      }
+    },
+    {
+      "id": "c4d5d4e2-ffa9-407e-9aec-1242356f4a13",
+      "agentId": "mimir",
+      "name": "Skuld Daily Forecast",
+      "enabled": true,
+      "createdAtMs": 1772890692266,
+      "updatedAtMs": 1773258415920,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "SKULD_FORECAST: Analyze Pipedrive pipeline, Zendesk tickets, and Urd history. Output to /Users/mimir/Desktop/Mimir/skuld/daily-forecast.md.\n\nOnly alert Robert via this message if something needs immediate attention. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 300,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773309600000,
+        "lastRunAtMs": 1773223635637,
+        "lastStatus": "ok",
+        "lastDurationMs": 15778
+      }
+    },
+    {
+      "id": "a468beb7-9243-47b7-851d-676abd31ba41",
+      "agentId": "mimir",
+      "name": "Tyr: Weekly Pipeline Analysis",
+      "enabled": true,
+      "createdAtMs": 1772890692270,
+      "updatedAtMs": 1773054012841,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 7 * * 1",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "WEEKLY PIPELINE ANALYSIS (Tyr): Generate strategic analysis:\n\n1) Pipeline health by stage (Spectrum pipeline 13 + Indirect pipeline 24)\n2) Deals won/lost this week with values\n3) Stalled deals (no activity >14 days)\n4) Win rate trend\n5) One strategic insight or recommendation\n\n**Post to Roam Pantheon Updates channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"6a05abc2-60f6-4308-b477-e27a716a74f9\"], \"text\": \"YOUR_ANALYSIS_HERE\"}'\n```",
+        "timeoutSeconds": 300
+      },
+      "state": {
+        "nextRunAtMs": 1773658800000,
+        "lastRunAtMs": 1773054034476,
+        "lastStatus": "ok",
+        "lastDurationMs": 136503
+      }
+    },
+    {
+      "id": "a15b05fd-fdc4-4f08-92ea-2cc6c76dab57",
+      "agentId": "mimir",
+      "name": "Daily Integration Health Check (Eir)",
+      "enabled": true,
+      "createdAtMs": 1772890692274,
+      "updatedAtMs": 1773226800004,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 7 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Morning integration health check.\n\n**IMPORTANT: Use the web_fetch tool for all HTTP requests. Do NOT use shell curl commands.**\n\n1) **Podium Stats** - web_fetch https://podium-8e8.pages.dev/api/stats\n   - Check `pipedrive` object exists with `casesOpen` (proves Pipedrive API working)\n   - Check `zendesk` object exists with `total` (proves Zendesk API working)\n   - Check `lastUpdated` is within 24 hours\n\n2) **Podium Sales Goals** - web_fetch https://podium-8e8.pages.dev/api/sales-goals\n   - Check returns agent data array\n\n3) **Podium Webhook** - For this one, use exec with full path: /usr/bin/curl -X POST https://tis-automations.pages.dev/api/pipedrive -H 'Content-Type: application/json' -d '{\"test\":true}'\n   - Check returns success response\n\n**RULES:**\n- Only report if something is actually DOWN\n- If Podium stats returns fresh pipedrive/zendesk data, those integrations are WORKING\n- If all healthy, reply NO_REPLY",
+        "deliver": true,
+        "bestEffortDeliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773313200000,
+        "lastRunAtMs": 1773226815717,
+        "lastStatus": "ok",
+        "lastDurationMs": 14405
+      }
+    },
+    {
+      "id": "ee995c60-20d4-4440-8771-837db800381b",
+      "agentId": "mimir",
+      "name": "LinkedIn SDR Morning Prospects",
+      "enabled": true,
+      "createdAtMs": 1772890834006,
+      "updatedAtMs": 1773258785872,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 7 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR morning routine: 1) Open Sales Navigator and search for prospects matching ICP (HR/Benefits decision makers at 50-500 employee companies in Virginia/nearby). 2) Select 10 prospects (Week 2+ rate). 3) View each profile and gather context. 4) Craft personalized connection messages for each using Brad voice (conversational, lowercase, direct). 5) Send Robert a digest with prospect names, companies, and proposed messages for approval. Wait for his approval before queuing sends.",
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773313200000,
+        "lastRunAtMs": 1773226830129,
+        "lastStatus": "ok",
+        "lastDurationMs": 39467
+      }
+    },
+    {
+      "id": "ec5526f7-43fe-4476-9a91-cbf0bd314f5b",
+      "agentId": "mimir",
+      "name": "Daily Briefing + Schedule",
+      "enabled": true,
+      "createdAtMs": 1772890834011,
+      "updatedAtMs": 1773258415925,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "DAILY BRIEFING + SCHEDULE (8 AM):\n\n**Part 1: System Status**\n1) Zendesk ticket count (open/urgent)\n2) Pipeline changes (new deals, won, lost)\n3) New GHL leads\n4) Any overnight alerts\n\n**Part 2: Robert's Day**\n- Today's meetings from calendar\n- Priority tasks from memory\n- Morning = deep work, Afternoon = reactive work\n\nFormat concisely. This is Robert's daily briefing to start the workday.",
+        "timeoutSeconds": 180,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773316800000,
+        "lastRunAtMs": 1773230467736,
+        "lastStatus": "ok",
+        "lastDurationMs": 22549
+      }
+    },
+    {
+      "id": "07fc8d3e-197b-46c8-8945-316b99ddcc66",
+      "agentId": "mimir",
+      "name": "Pantheon Daily Progress Reports",
+      "enabled": true,
+      "createdAtMs": 1772890834016,
+      "updatedAtMs": 1773232200001,
+      "schedule": {
+        "kind": "cron",
+        "expr": "30 8 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "DAILY PROGRESS REPORTS: Collect progress from each specialist:\n\n1. Check Eir's recent work: What was accomplished for client service/operational health? Any blockers?\n\n2. Check Bragi's recent work: What marketing progress was made? Leads generated? Content published?\n\n3. Check Tyr's recent work: Any strategic insights or operational improvements identified?\n\nSynthesize into a brief progress update. Flag anything that needs Robert's attention.\n\n**Post to Roam Pantheon Updates channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"6a05abc2-60f6-4308-b477-e27a716a74f9\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 300,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773318600000,
+        "lastError": "Error: Telegram send failed: chat not found (chat_id=153554f8-bb29-4112-9342-2535cb1f3041). Likely: bot not started in DM, bot removed from group/channel, group migrated (new -100… id), or wrong bot token. Input was: \"153554f8-bb29-4112-9342-2535cb1f3041\".",
+        "lastRunAtMs": 1773232200001,
+        "lastStatus": "error",
+        "lastDurationMs": 103803
+      }
+    },
+    {
+      "id": "719dbf97-cb5f-4ce3-8834-2aeef3ae5f7e",
+      "agentId": "mimir",
+      "name": "Bragi: Daily Marketing Check",
+      "enabled": true,
+      "createdAtMs": 1772890834022,
+      "updatedAtMs": 1773234000003,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "DAILY MARKETING CHECK (Bragi):\n\n**CREDENTIAL SETUP (REQUIRED FIRST):**\n```bash\nsource ~/.moltbot/.env\n```\n\n1) **Check GHL for new leads in past 24hrs:**\n```bash\nsource ~/.moltbot/.env && curl -s \"https://rest.gohighlevel.com/v1/contacts?limit=10&startAfterDate=$(date -v-1d +%Y-%m-%d)\" -H \"Authorization: Bearer $GHL_API_KEY\" | jq '.contacts | length'\n```\n\n2) Verify scheduled content is ready for today\n3) Flag any campaigns with poor performance (open rate <15%, CTR <1%)\n4) Suggest one content idea based on current trends\n\nKeep response brief - bullet points only.\n\n**Post to Roam Pantheon Updates channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"6a05abc2-60f6-4308-b477-e27a716a74f9\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 120
+      },
+      "state": {
+        "nextRunAtMs": 1773320400000,
+        "lastRunAtMs": 1773234014385,
+        "lastStatus": "ok",
+        "lastDurationMs": 16238
+      }
+    },
+    {
+      "id": "df7617e1-8051-44a7-ae08-2a29357f584b",
+      "agentId": "mimir",
+      "name": "Support Channel Monitor (Podium Bugs)",
+      "enabled": true,
+      "createdAtMs": 1772890834029,
+      "updatedAtMs": 1773265500005,
+      "schedule": {
+        "kind": "cron",
+        "expr": "*/15 9-17 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check Support Roam channel for new Podium bug reports from Elaine.\n\n**STEP 1:** Get recent messages:\n```bash\nsource ~/.moltbot/.env && curl -s \"https://api.ro.am/v0/chat.history?chat=G-b25aef2a-fd9b-4e6a-92e0-67388d9a87a3&limit=5\" -H \"Authorization: Bearer $ROAM_API_KEY\"\n```\n\n**STEP 2:** Look for messages from Elaine (U-5067f80a-29bb-4dfc-9004-facb1c21c80d) that mention Podium issues.\n\n**STEP 3:** If new bug report found:\n- Analyze the issue\n- Check Podium code at /Users/mimir/Desktop/Zed/podium\n- Fix if possible and deploy\n- Reply in Support channel confirming fix\n- Alert Robert via Signal only if you can't fix it\n\n**STEP 4:** If no new issues, reply NO_REPLY",
+        "timeoutSeconds": 300
+      },
+      "state": {
+        "nextRunAtMs": 1773320400000,
+        "lastRunAtMs": 1773265500005,
+        "lastStatus": "ok",
+        "lastDurationMs": 14839
+      }
+    },
+    {
+      "id": "0d9ba0b4-4b08-4723-a72a-9239c1b079bb",
+      "agentId": "bragi",
+      "name": "LinkedIn SDR Message Monitor",
+      "enabled": true,
+      "createdAtMs": 1772890834035,
+      "updatedAtMs": 1773268200001,
+      "schedule": {
+        "kind": "cron",
+        "expr": "*/30 9-18 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR Message Monitor:\n\n1. Load state from /Users/mimir/Desktop/Mimir/bragi-agent/linkedin-sdr/state.json\n\n2. CHECK PENDING RESPONSES - If any pendingResponses have respondAfter < now, send queued messages\n\n3. CHECK LINKEDIN MESSAGES - Look for unread from prospects\n   - AI/bot questions → ESCALATE TO ROBERT IMMEDIATELY\n   - Otherwise queue response with 30+ min delay\n\n4. CHECK CONNECTION ACCEPTS - Track pending count, queue warm openers for accepts\n\n5. UPDATE GHL CONTACTS with appropriate tags\n\n6. ON MEETING BOOKED - Create Pipedrive deal, notify Robert\n\nReply NO_REPLY if nothing to report. Alert Robert only for meetings or AI questions.",
+        "timeoutSeconds": 300,
+        "channel": "roam",
+        "deliver": true,
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773320400000,
+        "lastRunAtMs": 1773268200001,
+        "lastStatus": "error",
+        "lastDurationMs": 19848,
+        "lastError": "Error: Telegram send failed: chat not found (chat_id=153554f8-bb29-4112-9342-2535cb1f3041). Likely: bot not started in DM, bot removed from group/channel, group migrated (new -100… id), or wrong bot token. Input was: \"153554f8-bb29-4112-9342-2535cb1f3041\"."
+      }
+    },
+    {
+      "id": "c26d1bca-87da-4a73-b6e4-7df19409749f",
+      "agentId": "mimir",
+      "name": "LinkedIn SDR Morning Run",
+      "enabled": true,
+      "createdAtMs": 1772890834041,
+      "updatedAtMs": 1773258415930,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 10 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the LinkedIn SDR morning processor:\n\n1. Check status: cd /Users/mimir/Desktop/linkedin-sdr && node src/index.js status\n2. Run processor: node src/index.js run --max-actions 15\n3. Report results with counts (views, connections sent, replies received)\n\nOnly send update if there are replies or significant activity. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 600,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773324000000,
+        "lastRunAtMs": 1773237712400,
+        "lastStatus": "error",
+        "lastDurationMs": 30646,
+        "lastError": "Unsupported channel: signal"
+      }
+    },
+    {
+      "id": "9991e06b-ba5d-47a8-93c3-5d9ea4740b71",
+      "agentId": "mimir",
+      "name": "Afternoon Email Scan",
+      "enabled": true,
+      "createdAtMs": 1772890834048,
+      "updatedAtMs": 1773258415935,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 13 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "AFTERNOON EMAIL SCAN: Check Robert's email for new tasks since morning.\n\n1. Refresh Google token: ./scripts/refresh-google-token.sh\n2. Scan emails from rrodriguez@rtaylorins.com since 6 AM\n3. Identify new tasks (not FYI/CC noise)\n4. Flag items needing Robert's attention\n\nSend a brief summary to Robert. If nothing significant, reply NO_REPLY.",
+        "timeoutSeconds": 120,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773334800000,
+        "lastRunAtMs": 1773248452843,
+        "lastStatus": "error",
+        "lastDurationMs": 105537,
+        "lastError": "Unsupported channel: signal"
+      }
+    },
+    {
+      "id": "10859608-f138-4696-ad01-3c04b0d72c2f",
+      "agentId": "mimir",
+      "name": "LinkedIn SDR Afternoon Check",
+      "enabled": true,
+      "createdAtMs": 1772890834059,
+      "updatedAtMs": 1773258415939,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 14 * * 1-5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "LinkedIn SDR afternoon check:\n\n1. Check status: cd /Users/mimir/Desktop/linkedin-sdr && node src/index.js status\n2. Check for any replies in inbox\n3. Run processor with small batch if needed: node src/index.js run --max-actions 10\n\nOnly ping Robert if there are replies or important updates. Otherwise reply NO_REPLY.",
+        "timeoutSeconds": 600,
+        "deliver": true,
+        "channel": "roam",
+        "to": "153554f8-bb29-4112-9342-2535cb1f3041"
+      },
+      "state": {
+        "nextRunAtMs": 1773338400000,
+        "lastRunAtMs": 1773252207015,
+        "lastStatus": "error",
+        "lastDurationMs": 159437,
+        "lastError": "Unsupported channel: signal"
+      }
+    },
+    {
+      "id": "d1db39c6-bd35-4acd-abc9-09b90104d418",
+      "agentId": "mimir",
+      "name": "Weekly Spectrum Cases Summary to Roam",
+      "enabled": true,
+      "createdAtMs": 1772890834063,
+      "updatedAtMs": 1772890834063,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * 5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "WEEKLY SPECTRUM CASES SUMMARY: Pull Pipedrive data for pipeline ID 13 (Spectrum Cases) only.\n\n1) New deals added this week\n2) Deals closed (won/lost) this week with values\n3) Total pipeline value broken down by owner\n\n**Post to Roam Sales Team channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"02ff254f-6029-48d5-9c18-fafcf1757951\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 300
+      },
+      "state": {
+        "nextRunAtMs": 1773403200000
+      }
+    },
+    {
+      "id": "4b60f2ee-b657-4722-9d36-96eae8067e42",
+      "agentId": "mimir",
+      "name": "Agent of the Week Shoutout",
+      "enabled": true,
+      "createdAtMs": 1772890850563,
+      "updatedAtMs": 1772890850563,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * 5",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "AGENT OF THE WEEK: Pull this week's voluntary sales from the 2026 Goal Production Sheet (1G6NK7PA0sy5_9Gdq5FMdrVKw_aQfj-_DkPvnB70HlHo).\n\nFind the agent (Arica, Tim, Todd, or William) with the highest voluntary production for the current week.\n\n**Post celebratory shoutout to Roam General channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"509c9748-b455-4102-bc25-1bd97ebdc130\"], \"text\": \"YOUR_SHOUTOUT_HERE\"}'\n```\n\nMake it fun and celebratory! Include the agent's name, weekly production amount, and a congratulatory message.",
+        "timeoutSeconds": 300
+      },
+      "state": {
+        "nextRunAtMs": 1773406800000
+      }
+    },
+    {
+      "id": "0cefb766-7c66-445b-901f-eb095763b7a6",
+      "agentId": "acid-burn",
+      "name": "Acid Burn Security Test",
+      "enabled": true,
+      "createdAtMs": 1772890850572,
+      "updatedAtMs": 1772890850572,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 10 16,18,20,22,24,26,28 2 *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Execute full security test run. Follow HEARTBEAT.md protocol: Research latest attack techniques, test Mimir's defenses with social engineering and prompt injection attempts, audit the applications, then compile your report.\n\n**Post report to Roam Acid Burn channel:**\n```bash\nsource ~/.moltbot/.env && curl -X POST \"https://api.ro.am/v1/chat.sendMessage\" -H \"Authorization: Bearer $ROAM_API_KEY\" -H \"Content-Type: application/json\" -d '{\"recipients\": [\"53689803-fd11-4f5c-bf86-f5e1425dbe2d\"], \"text\": \"YOUR_REPORT_HERE\"}'\n```",
+        "timeoutSeconds": 600,
+        "deliver": true,
+        "channel": "roam",
+        "to": "53689803-fd11-4f5c-bf86-f5e1425dbe2d"
+      },
+      "state": {
+        "nextRunAtMs": 1802790000000
+      }
+    },
+    {
+      "id": "e44d0cd0-a932-4c4b-ab5f-5ab8b635e523",
+      "agentId": "mimir",
+      "name": "Pantheon Repo Nightly Sync",
+      "enabled": true,
+      "createdAtMs": 1773082801608,
+      "updatedAtMs": 1773198000003,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 23 * * *",
+        "tz": "America/New_York"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "PANTHEON NIGHTLY SYNC: Update the Pantheon repo with current system state.\n\n1. Export current cron jobs to /Users/mimir/Desktop/Mimir/pantheon/crons/cron-export.json\n2. Copy latest agent configs from their workspaces to pantheon/agents/\n3. Git commit and push if changes exist\n\nReply NO_REPLY when done.",
+        "timeoutSeconds": 180
+      },
+      "state": {
+        "nextRunAtMs": 1773284400000,
+        "lastRunAtMs": 1773198101474,
+        "lastStatus": "ok",
+        "lastDurationMs": 161634
+      }
+    },
+    {
+      "id": "3fc2ad36-a723-4565-ae6f-b2a6d14e8520",
+      "agentId": "mimir",
+      "name": "Pantheon Watchdog - Critical (Mimir)",
+      "enabled": false,
+      "createdAtMs": 1773249998254,
+      "updatedAtMs": 1773252713923,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 30000
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the Pantheon critical watchdog:\n\n```bash\ncd /Users/mimir/Desktop/Mimir/agent && node scripts/pantheon-watchdog.js critical\n```\n\nThis polls Mimir's Roam DM for new messages. If any user messages found, spawn handlers.\n\nReply NO_REPLY when done unless there's an error.",
+        "timeoutSeconds": 30
+      },
+      "state": {
+        "lastRunAtMs": 1773252707996,
+        "lastStatus": "ok",
+        "lastDurationMs": 5920
+      }
+    },
+    {
+      "id": "b780c02a-cecc-403d-962d-9b172b429f1f",
+      "agentId": "mimir",
+      "name": "Pantheon Watchdog - Bulk (Tier 2+)",
+      "enabled": false,
+      "createdAtMs": 1773250019424,
+      "updatedAtMs": 1773252713942,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 60000,
+        "anchorMs": 30000
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "next-heartbeat",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run the Pantheon bulk watchdog:\n\n```bash\ncd /Users/mimir/Desktop/Mimir/agent && node scripts/pantheon-watchdog.js bulk\n```\n\nThis polls Tier 2+ agents' Roam DMs (Tyr, Bragi, Eir, Helpers) in parallel. If any user messages found, spawn handlers.\n\nReply NO_REPLY when done unless there's an error.",
+        "timeoutSeconds": 60
+      },
+      "state": {
+        "lastRunAtMs": 1773252690002,
+        "lastStatus": "ok",
+        "lastDurationMs": 6862
+      }
+    }
+  ]
+}
